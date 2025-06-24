@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ux-deployment
+  labels:
+    app: ux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ux
+  template:
+    metadata:
+      labels:
+        app: ux
+    spec:
+      containers:
+      - name: ux-container
+        image: ghcr.io/bayedamethiam/technical-test-devops/secret-message-ux:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: ux-service
+  labels:
+    app: ux
+spec:
+  ports:
+    - port: 80
+      targetPort: 80
+  selector:
+    app: ux
+  type: ClusterIP # Expose le service uniquement en interne au cluster

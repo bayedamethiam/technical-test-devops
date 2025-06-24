@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-deployment
+  labels:
+    app: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api-container
+        image: ghcr.io/bayedamethiam/technical-test-devops/secret-message-api:latest
+        ports:
+        - containerPort: 8000 
+        env:
+        - name: MONGO_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: MONGO_DATABASE
+        - name: MONGO_USER
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: MONGO_USER
+        - name: MONGO_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongodb-credentials
+              key: MONGO_PASSWORD
+        - name: MONGO_URL
+          value: mongodb://$(MONGO_USER):$(MONGO_PASSWORD)@mongodb-service:27017/$(MONGO_DATABASE)
+        - name: SECRET_MESSAGE_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-encryption-key
+              key: SECRET_MESSAGE_ENCRYPTION_KEY
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-service 
+  labels:
+    app: api
+spec:
+  ports:
+    - port: 8000 
+      targetPort: 8000
+  selector:
+    app: api
+  type: ClusterIP

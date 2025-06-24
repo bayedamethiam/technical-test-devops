@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  api:
+    image: ghcr.io/bayedamethiam/technical-test-devops/secret-message-api:latest 
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://myuser:mypassword@mongodb:27017
+      - MONGO_DATABASE=mydatabase
+    depends_on:
+      - mongodb
+
+  ux:
+    image: ghcr.io/bayedamethiam/technical-test-devops/secret-message-ux:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+  mongodb:
+    image: arm64v8/mongo:6.0
+    environment:
+      - MONGO_INITDB_ROOT_PASSWORD=mypassword
+      - MONGO_INITDB_ROOT_USERNAME=myuser
+      - MONGO_INITDB_DATABASE=mydatabase
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
